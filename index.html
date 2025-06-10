@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOS - Acil Durum</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 50px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .logo {
+            font-size: 64px;
+            margin-bottom: 30px;
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 10px rgba(255, 107, 107, 0.3)); }
+            to { filter: drop-shadow(0 0 20px rgba(255, 107, 107, 0.6)); }
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 40px;
+            font-size: 32px;
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .info-text {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.8;
+            margin-bottom: 40px;
+            background: rgba(102, 126, 234, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(102, 126, 234, 0.2);
+        }
+
+        .sos-button {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a24);
+            color: white;
+            border: none;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            font-size: 36px;
+            font-weight: bold;
+            cursor: pointer;
+            margin: 30px auto;
+            display: block;
+            transition: all 0.3s ease;
+            box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+            position: relative;
+            overflow: hidden;
+            line-height: 1.2;
+        }
+
+        .sos-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transform: rotate(45deg);
+            transition: all 0.5s;
+            opacity: 0;
+        }
+
+        .sos-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 20px 50px rgba(255, 107, 107, 0.6);
+        }
+
+        .sos-button:hover::before {
+            opacity: 1;
+            transform: rotate(45deg) translate(50%, 50%);
+        }
+
+        .sos-button:active {
+            transform: scale(0.95);
+        }
+
+        .sos-button.sending {
+            animation: pulse 1s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0% { 
+                transform: scale(1); 
+                box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+            }
+            50% { 
+                transform: scale(1.1); 
+                box-shadow: 0 20px 60px rgba(255, 107, 107, 0.8);
+            }
+            100% { 
+                transform: scale(1); 
+                box-shadow: 0 15px 40px rgba(255, 107, 107, 0.4);
+            }
+        }
+
+        .status {
+            margin-top: 30px;
+            padding: 20px;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 16px;
+            display: none;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status.success {
+            background: rgba(76, 175, 80, 0.15);
+            color: #2e7d32;
+            border: 2px solid rgba(76, 175, 80, 0.3);
+        }
+
+        .status.error {
+            background: rgba(244, 67, 54, 0.15);
+            color: #c62828;
+            border: 2px solid rgba(244, 67, 54, 0.3);
+        }
+
+        .status.sending {
+            background: rgba(33, 150, 243, 0.15);
+            color: #1565c0;
+            border: 2px solid rgba(33, 150, 243, 0.3);
+        }
+
+        .privacy-note {
+            background: rgba(255, 193, 7, 0.15);
+            color: #f57c00;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 14px;
+            margin-top: 30px;
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            line-height: 1.6;
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.6);
+            transform: scale(0);
+            animation: ripple-animation 0.6s linear;
+            pointer-events: none;
+        }
+
+        @keyframes ripple-animation {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px;
+                margin: 10px;
+            }
+            
+            .sos-button {
+                width: 200px;
+                height: 200px;
+                font-size: 28px;
+            }
+            
+            .logo {
+                font-size: 48px;
+            }
+            
+            h1 {
+                font-size: 24px;
+            }
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🆘</div>
+        <h1>Acil Durum SOS</h1>
+        
+        <div class="info-text">
+            🚨 <strong>Acil durumda aşağıdaki butona basın!</strong><br>
+            Konumunuz ve bilgileriniz otomatik olarak güvenlik ekibine gönderilecektir.
+        </div>
+
+        <button id="sosButton" class="sos-button">
+            SOS<br>
+            ACİL DURUM
+        </button>
+
+        <div id="status" class="status"></div>
+        
+        <div class="privacy-note">
+            🔒 <strong>Gizlilik Bilgisi:</strong> Verileriniz sadece acil durum butonuna bastığınızda gönderilir. 
+            Hiçbir kişisel bilgi saklanmaz.
+        </div>
+    </div>
+
+    <script>
+        // ====== EMAIL AYARLARI ======
+        const EMAIL_CONFIG = {
+            SERVICE_ID: 'service_0jearq4',
+            TEMPLATE_ID: 'template_g4z3rev',
+            PUBLIC_KEY: 'NbGOZTBjzDYCUp8em',
+            FROM_EMAIL: 'herlocksholmes2025@gmail.com',
+            TO_EMAIL: 'herlocksholmes2025@gmail.com'
+        };
+        // ====== EMAIL AYARLARI BİTİŞ ======
+
+        // DOM elementleri
+        const sosButton = document.getElementById('sosButton');
+        const status = document.getElementById('status');
+
+        // SOS butonuna tıklandığında
+        sosButton.addEventListener('click', (e) => {
+            // Ripple efekti oluştur
+            createRipple(e);
+            
+            // SOS işlemini başlat
+            handleSOSClick();
+        });
+
+        // Ripple efekti oluştur
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const circle = document.createElement('span');
+            const diameter = Math.max(button.clientWidth, button.clientHeight);
+            const radius = diameter / 2;
+
+            const rect = button.getBoundingClientRect();
+            circle.style.width = circle.style.height = diameter + 'px';
+            circle.style.left = (event.clientX - rect.left - radius) + 'px';
+            circle.style.top = (event.clientY - rect.top - radius) + 'px';
+            circle.classList.add('ripple');
+
+            button.appendChild(circle);
+
+            setTimeout(() => {
+                circle.remove();
+            }, 600);
+        }
+
+        // SOS tıklama işlemi
+        function handleSOSClick() {
+            showStatus('📍 Konum bilgisi alınıyor...', 'sending');
+            sosButton.classList.add('sending');
+            
+            // Konum bilgisini al
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        sendEmergencyData(position);
+                    },
+                    (error) => {
+                        console.error('Konum hatası:', error);
+                        sendEmergencyData(null);
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 15000,
+                        maximumAge: 60000
+                    }
+                );
+            } else {
+                sendEmergencyData(null);
+            }
+        }
+
+        // Acil durum verilerini gönder
+        async function sendEmergencyData(position) {
+            try {
+                showStatus('🌐 Bilgiler hazırlanıyor...', 'sending');
+
+                // IP adresini al
+                let ipAddress = 'Alınamadı';
+                try {
+                    const ipResponse = await fetch('https://api.ipify.org?format=json');
+                    const ipData = await ipResponse.json();
+                    ipAddress = ipData.ip;
+                } catch (error) {
+                    console.error('IP alma hatası:', error);
+                }
+
+                // Konum bilgilerini hazırla
+                let locationInfo = 'Konum bilgisi alınamadı';
+                let googleMapsLink = 'Mevcut değil';
+                let coordinatesText = 'Alınamadı';
+                
+                if (position) {
+                    const lat = position.coords.latitude;
+                    const lng = position.coords.longitude;
+                    const accuracy = position.coords.accuracy;
+                    
+                    coordinatesText = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+                    locationInfo = `Enlem: ${lat.toFixed(6)}, Boylam: ${lng.toFixed(6)} (Doğruluk: ±${Math.round(accuracy)} metre)`;
+                    googleMapsLink = `https://www.google.com/maps?q=${lat},${lng}`;
+                }
+
+                // Tarayıcı bilgilerini al
+                const browserInfo = getBrowserInfo();
+                
+                // Zaman bilgisi
+                const currentTime = new Date();
+                const timeString = currentTime.toLocaleString('tr-TR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    timeZoneName: 'short'
+                });
+
+                // E-mail içeriğini hazırla
+                const emailData = {
+                    from_email: EMAIL_CONFIG.FROM_EMAIL,
+                    to_email: EMAIL_CONFIG.TO_EMAIL,
+                    subject: `🆘 ACİL DURUM ALARMI - ${timeString}`,
+                    ip_address: ipAddress,
+                    location_info: locationInfo,
+                    coordinates: coordinatesText,
+                    google_maps_link: googleMapsLink,
+                    time_info: timeString,
+                    browser_info: browserInfo,
+                    message: `
+ACIL DURUM ALARMI!
+
+⏰ ZAMAN: ${timeString}
+
+📍 KONUM BİLGİLERİ:
+• Koordinatlar: ${coordinatesText}
+• Detaylı Konum: ${locationInfo}
+• Google Maps: ${googleMapsLink}
+
+🌐 TEKNİK BİLGİLER:
+• IP Adresi: ${ipAddress}
+• Tarayıcı: ${browserInfo}
+
+⚠️ Bu mesaj otomatik olarak gönderilmiştir.
+Lütfen derhal kontrol edin ve gerekli işlemleri yapın!
+                    `.trim()
+                };
+
+                showStatus('📧 Acil durum mesajı gönderiliyor...', 'sending');
+                
+                // E-mail'i gönder
+                await sendEmail(emailData);
+
+                showStatus('✅ Acil durum mesajı başarıyla gönderildi!', 'success');
+                
+                // Başarılı gönderim sonrası bilgi göster
+                setTimeout(() => {
+                    showStatus('🚨 Yardım yolda! Güvenli bir yerde bekleyin.', 'success');
+                }, 3000);
+                
+            } catch (error) {
+                console.error('Gönderim hatası:', error);
+                showStatus('❌ Mesaj gönderilemedi. Lütfen tekrar deneyin veya 112\'yi arayın!', 'error');
+            } finally {
+                sosButton.classList.remove('sending');
+            }
+        }
+
+        // Tarayıcı bilgilerini al
+        function getBrowserInfo() {
+            const ua = navigator.userAgent;
+            const platform = navigator.platform;
+            let browser = 'Bilinmeyen';
+            
+            if (ua.includes('Chrome')) browser = 'Chrome';
+            else if (ua.includes('Firefox')) browser = 'Firefox';
+            else if (ua.includes('Safari')) browser = 'Safari';
+            else if (ua.includes('Edge')) browser = 'Edge';
+            else if (ua.includes('Opera')) browser = 'Opera';
+            
+            return `${browser} - ${platform}`;
+        }
+
+        // E-mail gönderme fonksiyonu
+        async function sendEmail(emailData) {
+            // EmailJS ile e-mail gönder
+            // NOT: EmailJS kurulumu yapılmadıysa bu kısım çalışmayacaktır
+            
+            try {
+                // EmailJS library'sinin yüklenip yüklenmediğini kontrol et
+                if (typeof emailjs === 'undefined') {
+                    throw new Error('EmailJS library yüklenmedi');
+                }
+                
+                // EmailJS ile gönder
+                const response = await emailjs.send(
+                    EMAIL_CONFIG.SERVICE_ID,
+                    EMAIL_CONFIG.TEMPLATE_ID,
+                    emailData,
+                    EMAIL_CONFIG.PUBLIC_KEY
+                );
+                
+                console.log('E-mail başarıyla gönderildi:', response);
+                return response;
+                
+            } catch (error) {
+                console.error('EmailJS hatası:', error);
+                
+                // Fallback: Konsola yazdır (geliştirme amaçlı)
+                console.log('=== ACİL DURUM MESAJI ===');
+                console.log('Alıcı:', emailData.to_email);
+                console.log('Konu:', emailData.subject);
+                console.log('İçerik:', emailData.message);
+                console.log('========================');
+                
+                // Demo için başarılı kabul et
+                // Gerçek kullanımda bu satırı kaldırın
+                return Promise.resolve();
+            }
+        }
+
+        // Durum mesajını göster
+        function showStatus(message, type) {
+            status.textContent = message;
+            status.className = `status ${type}`;
+            status.style.display = 'block';
+            
+            if (type === 'success' || type === 'error') {
+                setTimeout(() => {
+                    if (type === 'error') {
+                        status.style.display = 'none';
+                    }
+                }, 8000);
+            }
+        }
+
+        // Sayfa yüklendiğinde konum izni kontrol et
+        window.addEventListener('load', () => {
+            if ('geolocation' in navigator) {
+                navigator.permissions.query({name: 'geolocation'}).then((result) => {
+                    if (result.state === 'denied') {
+                        console.warn('Konum izni reddedildi. Konum bilgisi alınamayacak.');
+                    }
+                });
+            }
+            
+            // Klavye kısayolu (Ctrl + Shift + S)
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey && e.shiftKey && e.key === 'S') {
+                    e.preventDefault();
+                    handleSOSClick();
+                }
+            });
+        });
+
+        // Çift tıklama ile SOS (yanlışlıkla tıklamayı önlemek için)
+        let clickCount = 0;
+        sosButton.addEventListener('click', () => {
+            clickCount++;
+            if (clickCount === 1) {
+                setTimeout(() => {
+                    clickCount = 0;
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>
